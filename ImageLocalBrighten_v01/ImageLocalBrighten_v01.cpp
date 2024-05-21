@@ -8,8 +8,6 @@ using namespace std;
 
 Mat flip_pixel_vals(Mat img_start);
 
-char make_out_file_name(const char* out_path, const char* in_path);
-
 int main(int argc, char** args) {
 	Mat in_img;
 	if (argc >= 2) {
@@ -50,12 +48,5 @@ Mat flip_pixel_vals(Mat img_start) {
 		}
 	}
 	return img;
-}
-
-char make_out_file_name(const char* out_path, const char* in_path) {
-	if (strlen(out_path) == 0) {
-		int a = 9;
-	}
-	return 'd';
 }
 

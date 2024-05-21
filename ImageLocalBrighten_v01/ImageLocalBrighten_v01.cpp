@@ -1,5 +1,6 @@
 ﻿#include "hazeremoval.h"
 #include "opencv2/opencv.hpp"
+#include <string>
 #include <iostream>
 
 using namespace cv;
@@ -7,12 +8,17 @@ using namespace std;
 
 Mat flip_pixel_vals(Mat img_start);
 
+char make_out_file_name(const char* out_path, const char* in_path);
+
 int main(int argc, char** args) {
-	const char* img_path = "C:\\cv\\ImageLocalBrighten\\x64\\Debug\\mindal4_nonbg.png";
-	if (argc > 0) {
-		const char* img_path = args[1];
+	Mat in_img;
+	if (argc >= 2) {
+		in_img = imread(args[1]);
 	}
-	Mat in_img = imread(img_path);
+	else {
+		cout << "Error. File name is absent.";
+		return 0;
+	}
 	in_img = flip_pixel_vals(in_img);
 	Mat out_img(in_img.rows, in_img.cols, CV_8UC3);
 	unsigned char* indata = in_img.data;
@@ -23,7 +29,12 @@ int main(int argc, char** args) {
 	cout << hr.Process(indata, outdata, in_img.cols, in_img.rows, in_img.channels()) << endl;
 	out_img = flip_pixel_vals(out_img);
 	imshow("out_img", out_img);
-	//imwrite("C:\\cv\\ImageLocalBrighten\\x64\\Debug\\mindal4_nonbg_out_1.png", out_img);
+	if (argc >= 3) {
+		imwrite(args[2], out_img);
+	}
+	else {
+		imwrite("out.png", out_img);
+	}
 	waitKey(0);
 	// system("pause");
 	return 0;
@@ -40,3 +51,11 @@ Mat flip_pixel_vals(Mat img_start) {
 	}
 	return img;
 }
+
+char make_out_file_name(const char* out_path, const char* in_path) {
+	if (strlen(out_path) == 0) {
+		int a = 9;
+	}
+	return 'd';
+}
+

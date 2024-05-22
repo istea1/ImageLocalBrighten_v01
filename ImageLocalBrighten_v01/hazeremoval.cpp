@@ -49,8 +49,11 @@ bool CHazeRemoval::Process(const unsigned char* indata, unsigned char* outdata, 
 	get_air_light(p_src, tmp_vec, p_Alight, rows, cols, channels);
 	get_transmission(p_src, p_tran, p_Alight, rows, cols, channels, radius, omega);
 	guided_filter(p_tran, p_tran, p_gtran, r, eps);
+	delete p_tran;
 	count_gtransmission(p_src, p_gtran, p_Alight, rows, cols, channels, radius, omega);
 	recover(p_src, p_gtran, p_dst, p_Alight, rows, cols, channels, t0);
+	delete p_src;
+	delete p_Alight;
 	assign_data(outdata, p_dst, rows, cols, channels);
 
 	return ret;

@@ -41,21 +41,19 @@ bool CHazeRemoval::Process(const unsigned char* indata, unsigned char* outdata, 
 	vector<Pixel> tmp_vec;
 	Mat* p_src = new Mat(rows, cols, CV_8UC3, (void*)indata);
 	Mat* p_dst = new Mat(rows, cols, CV_64FC3);
-	//Mat * p_dark = new Mat(rows, cols, CV_64FC1);
 	Mat* p_tran = new Mat(rows, cols, CV_64FC1);
 	Mat* p_gtran = new Mat(rows, cols, CV_64FC1);
 	Vec3d* p_Alight = new Vec3d();
 
-	//1. getting airlight
 	get_dark_channel(p_src, tmp_vec, rows, cols, channels, radius);
 	get_air_light(p_src, tmp_vec, p_Alight, rows, cols, channels);
-	//2.get transmission map
 	get_transmission(p_src, p_tran, p_Alight, rows, cols, channels, radius, omega);
-	//3. Use guided filtering to refine the transmission map
 	guided_filter(p_tran, p_tran, p_gtran, r, eps);
-	//4.count final transmission map
+	delete p_tran;
 	count_gtransmission(p_src, p_gtran, p_Alight, rows, cols, channels, radius, omega);
 	recover(p_src, p_gtran, p_dst, p_Alight, rows, cols, channels, t0);
+	delete p_src;
+	delete p_Alight;
 	assign_data(outdata, p_dst, rows, cols, channels);
 
 	return ret;
@@ -80,7 +78,6 @@ void get_dark_channel(const cv::Mat* p_src, std::vector<Pixel>& tmp_vec, int row
 			uchar r = tmp[2];
 			uchar minpixel = b > g ? ((g > r) ? r : g) : ((b > r) ? r : b);
 			min_val = cv::min((double)minpixel, min_val);
-			//p_dark->ptr<double>(i)[j] = min_val;
 			tmp_vec.push_back(Pixel(i, j, uchar(min_val)));
 		}
 	}
@@ -118,8 +115,6 @@ void get_transmission(const cv::Mat* p_src, cv::Mat* p_tran, cv::Vec3d* p_Alight
 			double minpixel = min(tmp);
 			minpixel = b > g ? ((g > r) ? r : g) : ((b > r) ? r : b);
 			min_val = cv::min(minpixel, min_val);
-			//min_val = minpixel;
-			//p_tran->ptr<double>(i)[j] = 1 - omega*min_val;
 			p_tran->ptr<double>(i)[j] = 1 - min_val;
 		}
 	}
@@ -133,8 +128,6 @@ void count_gtransmission(const cv::Mat* p_src, cv::Mat* p_gtran, cv::Vec3d* p_Al
 	for (int i = 0; i < rows; i++) {
 		for (int j = 0; j < cols; j++) {
 			double gtmp = p_gtran->ptr<double>(i)[j];
-			//cout << minpixel << " ";
-			//min_val = cv::min(minpixel, min_val);
 			p_gtran->ptr<double>(i)[j] = 1 - omega * (1 - gtmp);
 		}
 	}

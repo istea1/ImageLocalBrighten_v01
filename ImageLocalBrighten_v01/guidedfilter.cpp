@@ -103,10 +103,10 @@ cv::Mat GuidedFilterMono::filterSingleChannel(const cv::Mat& p) const
 {
 	cv::Mat mean_p = boxfilter(p, r);
 	cv::Mat mean_Ip = boxfilter(I.mul(p), r);
-	cv::Mat cov_Ip = mean_Ip - mean_I.mul(mean_p); // this is the covariance of (I, p) in each local patch.
+	cv::Mat cov_Ip = mean_Ip - mean_I.mul(mean_p);
 
-	cv::Mat a = cov_Ip / (var_I + eps); // Eqn. (5) in the paper;
-	cv::Mat b = mean_p - a.mul(mean_I); // Eqn. (6) in the paper;
+	cv::Mat a = cov_Ip / (var_I + eps);
+	cv::Mat b = mean_p - a.mul(mean_I);
 
 	cv::Mat mean_a = boxfilter(a, r);
 	cv::Mat mean_b = boxfilter(b, r);
@@ -130,11 +130,6 @@ GuidedFilterColor::GuidedFilterColor(const cv::Mat& origI, int r, double eps) : 
 	mean_I_g = boxfilter(Ichannels[1], r);
 	mean_I_b = boxfilter(Ichannels[2], r);
 
-	// variance of I in each local patch: the matrix Sigma in Eqn (14).
-	// Note the variance in each local patch is a 3x3 symmetric matrix:
-	//           rr, rg, rb
-	//   Sigma = rg, gg, gb
-	//           rb, gb, bb
 	cv::Mat var_I_rr = boxfilter(Ichannels[0].mul(Ichannels[0]), r) - mean_I_r.mul(mean_I_r) + eps;
 	cv::Mat var_I_rg = boxfilter(Ichannels[0].mul(Ichannels[1]), r) - mean_I_r.mul(mean_I_g);
 	cv::Mat var_I_rb = boxfilter(Ichannels[0].mul(Ichannels[2]), r) - mean_I_r.mul(mean_I_b);
@@ -142,7 +137,6 @@ GuidedFilterColor::GuidedFilterColor(const cv::Mat& origI, int r, double eps) : 
 	cv::Mat var_I_gb = boxfilter(Ichannels[1].mul(Ichannels[2]), r) - mean_I_g.mul(mean_I_b);
 	cv::Mat var_I_bb = boxfilter(Ichannels[2].mul(Ichannels[2]), r) - mean_I_b.mul(mean_I_b) + eps;
 
-	// Inverse of Sigma + eps * I
 	invrr = var_I_gg.mul(var_I_bb) - var_I_gb.mul(var_I_gb);
 	invrg = var_I_gb.mul(var_I_rb) - var_I_rg.mul(var_I_bb);
 	invrb = var_I_rg.mul(var_I_gb) - var_I_gg.mul(var_I_rb);
@@ -168,7 +162,6 @@ cv::Mat GuidedFilterColor::filterSingleChannel(const cv::Mat& p) const
 	cv::Mat mean_Ip_g = boxfilter(Ichannels[1].mul(p), r);
 	cv::Mat mean_Ip_b = boxfilter(Ichannels[2].mul(p), r);
 
-	// covariance of (I, p) in each local patch.
 	cv::Mat cov_Ip_r = mean_Ip_r - mean_I_r.mul(mean_p);
 	cv::Mat cov_Ip_g = mean_Ip_g - mean_I_g.mul(mean_p);
 	cv::Mat cov_Ip_b = mean_Ip_b - mean_I_b.mul(mean_p);
@@ -177,12 +170,12 @@ cv::Mat GuidedFilterColor::filterSingleChannel(const cv::Mat& p) const
 	cv::Mat a_g = invrg.mul(cov_Ip_r) + invgg.mul(cov_Ip_g) + invgb.mul(cov_Ip_b);
 	cv::Mat a_b = invrb.mul(cov_Ip_r) + invgb.mul(cov_Ip_g) + invbb.mul(cov_Ip_b);
 
-	cv::Mat b = mean_p - a_r.mul(mean_I_r) - a_g.mul(mean_I_g) - a_b.mul(mean_I_b); // Eqn. (15) in the paper;
+	cv::Mat b = mean_p - a_r.mul(mean_I_r) - a_g.mul(mean_I_g) - a_b.mul(mean_I_b);
 
 	return (boxfilter(a_r, r).mul(Ichannels[0])
 		+ boxfilter(a_g, r).mul(Ichannels[1])
 		+ boxfilter(a_b, r).mul(Ichannels[2])
-		+ boxfilter(b, r));  // Eqn. (16) in the paper;
+		+ boxfilter(b, r));
 }
 
 
